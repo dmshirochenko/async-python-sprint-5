@@ -1,7 +1,7 @@
 import secrets
 from typing import Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.future import select
@@ -48,3 +48,20 @@ async def login_user(credentials: UserLoginSchema, db: AsyncSession = Depends(ge
             return user
         else:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
+
+
+@router.get("/v1/user/by-token", response_model=UserSchema)
+async def get_current_user(db: AsyncSession = Depends(get_async_session), authorization: str = Header(...)) -> User:
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format.")
+
+    token = authorization[7:]
+
+    async with db as session:
+        query = select(User).filter(User.token == token)
+        result = await session.execute(query)
+        user = result.scalars().first()
+        if not user:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found with provided token")
+
+    return user
