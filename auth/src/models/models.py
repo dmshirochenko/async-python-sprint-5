@@ -9,5 +9,6 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     username = Column(String, unique=True, index=True)
+    hashed_password = Column(String(128))
     token = Column(String)
     is_active = Column(Boolean, default=True)
