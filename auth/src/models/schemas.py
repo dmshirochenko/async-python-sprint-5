@@ -9,3 +9,13 @@ class UserSchema(BaseModel):
 
     class Config:
         orm_mode = True
+
+
+class UserRegistrationSchema(BaseModel):
+    username: str
+    password: str
+
+
+class UserLoginSchema(BaseModel):
+    username: str
+    password: str
