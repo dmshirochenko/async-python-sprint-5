@@ -8,6 +8,8 @@ postgres_instance/
 postgres_instance_auth/
 shortener.db
 .DS_Store
+postgres_instance_file_storage/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

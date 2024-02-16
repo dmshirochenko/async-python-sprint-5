@@ -2,6 +2,8 @@
 .git
 .gitignore
 .svn
+file_storage_api/postgres_instance_file_storage/
+auth/postgres_instance_auth
 
 # Ignore editor-specific files
 *.swp
