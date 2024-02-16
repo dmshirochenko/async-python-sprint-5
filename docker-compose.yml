@@ -43,5 +43,49 @@ services:
     networks:
       - api_network
 
+  file_storage_postgres:
+    image: postgres:13
+    container_name: file_storage_postgres
+    environment:
+      POSTGRES_USER: ${FILE_STORAGE_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FILE_STORAGE_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${FILE_STORAGE_POSTGRES_DB}
+    expose:
+      - "5432"
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${FILE_STORAGE_POSTGRES_USER} -d ${FILE_STORAGE_POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./file_storage_api/file_storage_postgres_db/db_init.sql:/docker-entrypoint-initdb.d/db_init.sql
+      - ./file_storage_api/postgres_instance_file_storage/data:/var/lib/postgresql/data
+    networks:
+      - api_network
+
+  file_storage_service:
+    build: ./file_storage_api/
+    container_name: file_storage_service
+    volumes:
+      - ./file_storage_api/:/usr/src/app
+    ports:
+      - "8080:8080"
+    depends_on:
+      file_storage_postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://file_storage_service:8000/v1/ping || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - api_network
+
+
+
 networks:
   api_network:
