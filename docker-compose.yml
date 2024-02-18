@@ -75,6 +75,8 @@ services:
     depends_on:
       file_storage_postgres:
         condition: service_healthy
+      minio:
+        condition: service_healthy
     env_file:
       - .env
     healthcheck:
@@ -97,6 +99,11 @@ services:
       MINIO_ROOT_PASSWORD: $MINIO_ROOT_PASSWORD
     command: server /data --console-address :9001
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "mc alias set myminio http://minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && mc admin info myminio"]
+      interval: 10s
+      timeout: 10s
+      retries: 3
     networks:
       - api_network
 
@@ -114,7 +121,8 @@ services:
 
         mc mb minio/${MINIO_BUCKET}
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     networks:
       - api_network
 
