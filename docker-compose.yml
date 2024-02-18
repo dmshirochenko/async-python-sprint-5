@@ -78,14 +78,48 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://file_storage_service:8000/v1/ping || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://file_storage_service:8080/v1/ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
     networks:
       - api_network
 
+  minio:
+    image: minio/minio:latest
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - minio_data:/data
+    environment:
+      MINIO_ROOT_USER: $MINIO_ROOT_USER
+      MINIO_ROOT_PASSWORD: $MINIO_ROOT_PASSWORD
+    command: server /data --console-address :9001
+    restart: unless-stopped
+    networks:
+      - api_network
 
+  create-bucket:
+    image: minio/mc:latest
+    environment:
+      MC_HOST_minio: http://${MINIO_ROOT_USER}:${MINIO_ROOT_PASSWORD}@minio:9000
+    entrypoint:
+      - sh
+      - -c
+      - |
+        until mc ls minio > /dev/null 2>&1; do
+          sleep 0.5
+        done
+
+        mc mb minio/${MINIO_BUCKET}
+    depends_on:
+      - minio
+    networks:
+      - api_network
+
+volumes:
+  minio_data:
 
 networks:
   api_network:

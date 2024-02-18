@@ -1,19 +1,20 @@
-import aiofiles
 import uuid
-from datetime import datetime
+from starlette.concurrency import run_in_threadpool
+from starlette.responses import StreamingResponse
 
 from fastapi import File as FastAPIFile
-from fastapi.responses import FileResponse
 from fastapi import APIRouter, UploadFile, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.future import select
-
 from sqlalchemy.ext.asyncio import AsyncSession
+from minio.error import S3Error
 
 from src.core.config import settings
 from src.db.db_connector import get_async_session
+from src.db.storage_connector import minio_client
 from src.models.models import File
 from src.models.schemas import FileInfoResponse, FileListResponse
+from src.services.utils import ensure_bucket_exists, upload_file_to_minio, save_file_info
 
 router = APIRouter()
 
@@ -23,7 +24,7 @@ async def get_current_user():
 
 
 @router.get("/v1/ping")
-async def ping_database():
+async def ping_service():
     return {"message": "Service is up and running"}
 
 
@@ -42,28 +43,14 @@ async def upload_file(
     user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_async_session),
 ):
-    file_location = f"{settings.base_dir_local}/storage/{upload_file.filename}"
+    bucket_name = settings.minio_bucket
+    file_name = f"{uuid.uuid4()}-{upload_file.filename}"
+    file_location = f"{user['user_id']}/{file_name}"
 
-    existing_file = await db.execute(select(File).where(File.path == file_location))
-    existing_file = existing_file.scalars().first()
-    if existing_file:
-        raise HTTPException(status_code=400, detail="File already exists with the given path")
-
-    async with aiofiles.open(file_location, "wb") as out_file:
-        content = await upload_file.read()
-        await out_file.write(content)
-
-    file_info = File(
-        user_id=user["user_id"],
-        file_name=upload_file.filename,
-        created_at=datetime.now(),
-        path=file_location,
-        size=len(content),
-        is_downloadable=True,
-    )
-    db.add(file_info)
-    await db.commit()
-    await db.refresh(file_info)
+    await ensure_bucket_exists(bucket_name)
+    content = await upload_file.read()
+    await upload_file_to_minio(bucket_name, file_location, content)
+    file_info = await save_file_info(db, user["user_id"], file_name, file_location, len(content))
 
     return FileInfoResponse.from_orm(file_info)
 
@@ -78,6 +65,14 @@ async def download_file(
         if not file:
             raise HTTPException(status_code=404, detail="File not found")
 
-        # Make sure the file path is correct and accessible
-        file_path = file.path  # Ensure this is the absolute path to the file
-        return FileResponse(path=file_path, filename=file.file_name, media_type="application/octet-stream")
+        try:
+            response = await run_in_threadpool(minio_client.get_object, settings.minio_bucket, file.path)
+            return StreamingResponse(
+                response.stream(32 * 1024),
+                media_type="application/octet-stream",
+                headers={"Content-Disposition": f"attachment; filename={file.file_name}"},
+            )
+        except S3Error as e:
+            raise HTTPException(status_code=500, detail=f"Failed to retrieve file from storage: {e}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {e}")
