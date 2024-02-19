@@ -15,7 +15,7 @@ load_dotenv('.env')
 config = context.config
 
 import os
-config.set_main_option('sqlalchemy.url', os.environ['FILE_STORAGE_DATABASE_URL'])
+config.set_main_option('sqlalchemy.url', os.environ['FILE_STORAGE_POSTGRES_DATABASE_URL'])
 
 
 # Interpret the config file for Python logging.
