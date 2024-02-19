@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     base_dir: str = Field(BASE_DIR)
     env_name: str = os.getenv("ENV_NAME")
     db_url: str = os.getenv("FILE_STORAGE_POSTGRES_DATABASE_URL")
+    auth_service_url: str = os.getenv("AUTH_SERVER_URL")
     minio_host: str = os.getenv("MINIO_HOSTNAME")
     minio_url: str = os.getenv("MINIO_URL")
     minio_access_key: str = os.getenv("MINIO_ACCESS_KEY")
