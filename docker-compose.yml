@@ -100,6 +100,19 @@ services:
     networks:
       - api_network
 
+  test-file_storage_service:
+    build:
+      context: ./file_storage_api/
+      dockerfile: tests/Dockerfile
+    container_name: test-file_storage_service
+    env_file:
+      - .env
+    depends_on:
+      file_storage_service:
+        condition: service_healthy
+    networks:
+      - api_network
+
   minio:
     image: minio/minio:latest
     ports:
