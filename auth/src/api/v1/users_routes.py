@@ -14,12 +14,12 @@ import src.services.user_auth_services as user_auth_services
 router = APIRouter()
 
 
-@router.get("/v1/ping")
+@router.get("/auth/v1/ping")
 async def ping_database():
     return {"message": "Service is up and running"}
 
 
-@router.post("/v1/user/registration", status_code=status.HTTP_201_CREATED, response_model=UserSchema)
+@router.post("/auth/v1/user/registration", status_code=status.HTTP_201_CREATED, response_model=UserSchema)
 async def register_user(
     user_registration_info: UserRegistrationSchema, db: AsyncSession = Depends(get_async_session)
 ) -> Any:
@@ -38,7 +38,7 @@ async def register_user(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username is already taken")
 
 
-@router.post("/v1/user/login", response_model=UserSchema)
+@router.post("/auth/v1/user/login", response_model=UserSchema)
 async def login_user(credentials: UserLoginSchema, db: AsyncSession = Depends(get_async_session)) -> Any:
     async with db as session:
         query = select(User).filter(User.username == credentials.username)
@@ -50,7 +50,7 @@ async def login_user(credentials: UserLoginSchema, db: AsyncSession = Depends(ge
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect username or password")
 
 
-@router.get("/v1/user/by-token", response_model=UserSchema)
+@router.get("/auth/v1/user/by-token", response_model=UserSchema)
 async def get_current_user(db: AsyncSession = Depends(get_async_session), authorization: str = Header(...)) -> User:
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid authorization header format.")

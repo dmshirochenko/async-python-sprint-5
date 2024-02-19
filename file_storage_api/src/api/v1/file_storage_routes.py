@@ -23,12 +23,12 @@ async def get_current_user():
     return {"user_id": 1}
 
 
-@router.get("/v1/ping")
+@router.get("/file-storage/v1/ping")
 async def ping_service():
     return {"message": "Service is up and running"}
 
 
-@router.get("/files/list", response_model=FileListResponse)
+@router.get("/file-storage/files/list", response_model=FileListResponse)
 async def list_files(user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_async_session)):
     async with db as session:
         result = await session.execute(select(File).where(File.user_id == user["user_id"]))
@@ -37,7 +37,7 @@ async def list_files(user: dict = Depends(get_current_user), db: AsyncSession = 
         return FileListResponse(user_id=user["user_id"], files=files_info)
 
 
-@router.post("/files/upload", response_model=FileInfoResponse)
+@router.post("/file-storage/files/upload", response_model=FileInfoResponse)
 async def upload_file(
     upload_file: UploadFile = FastAPIFile(...),
     user: dict = Depends(get_current_user),
@@ -55,7 +55,7 @@ async def upload_file(
     return FileInfoResponse.from_orm(file_info)
 
 
-@router.get("/files/download")
+@router.get("/file-storage/files/download")
 async def download_file(
     file_id: uuid.UUID, user: dict = Depends(get_current_user), db: AsyncSession = Depends(get_async_session)
 ):

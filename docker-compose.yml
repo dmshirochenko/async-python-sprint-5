@@ -36,7 +36,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://auth_service:8000/v1/ping || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://auth_service:8000/auth/v1/ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -80,7 +80,7 @@ services:
     env_file:
       - .env
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://file_storage_service:8080/v1/ping || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://file_storage_service:8080/file-storage/v1/ping || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -125,6 +125,23 @@ services:
         condition: service_healthy
     networks:
       - api_network
+
+  nginx:
+    container_name: nginx
+    image: nginx:1.23.2
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/config:/etc/nginx/conf.d:ro
+    depends_on:
+      auth_service:
+        condition: service_healthy
+      file_storage_service:
+        condition: service_healthy
+    ports:
+      - "80:80"
+    networks:
+      - api_network
+
 
 volumes:
   minio_data:
