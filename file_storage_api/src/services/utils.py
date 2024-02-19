@@ -10,7 +10,7 @@ from src.models.models import File
 from src.db.storage_connector import minio_client
 
 
-async def ensure_bucket_exists(bucket_name: str):
+async def ensure_bucket_exists(bucket_name: str) -> None:
     try:
         found = minio_client.bucket_exists(bucket_name)
         if not found:
@@ -19,7 +19,7 @@ async def ensure_bucket_exists(bucket_name: str):
         raise HTTPException(status_code=500, detail=f"MinIO error: {str(e)}")
 
 
-async def upload_file_to_minio(bucket_name: str, file_location: str, content: bytes):
+async def upload_file_to_minio(bucket_name: str, file_location: str, content: bytes) -> None:
     try:
         content_file = BytesIO(content)
         await run_in_threadpool(
@@ -33,7 +33,7 @@ async def upload_file_to_minio(bucket_name: str, file_location: str, content: by
         raise HTTPException(status_code=500, detail=f"Failed to upload to MinIO: {str(e)}")
 
 
-async def save_file_info(db: AsyncSession, user_id: str, file_name: str, file_location: str, file_size: int):
+async def save_file_info(db: AsyncSession, user_id: str, file_name: str, file_location: str, file_size: int) -> File:
     try:
         file_info = File(
             user_id=user_id,
