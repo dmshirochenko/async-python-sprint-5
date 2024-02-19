@@ -43,6 +43,19 @@ services:
     networks:
       - api_network
 
+  test-auth-service:
+    build:
+      context: ./auth/
+      dockerfile: tests/Dockerfile
+    container_name: test-auth-service
+    env_file:
+      - .env
+    depends_on:
+      auth_service:
+        condition: service_healthy
+    networks:
+      - api_network
+
   file_storage_postgres:
     image: postgres:13
     container_name: file_storage_postgres
