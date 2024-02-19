@@ -1,5 +1,6 @@
 from io import BytesIO
 from datetime import datetime
+from starlette.concurrency import run_in_threadpool
 
 from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,7 +14,7 @@ async def ensure_bucket_exists(bucket_name: str):
     try:
         found = minio_client.bucket_exists(bucket_name)
         if not found:
-            minio_client.make_bucket(bucket_name)
+            raise HTTPException(status_code=404, detail=f"Bucket '{bucket_name}' not found")
     except S3Error as e:
         raise HTTPException(status_code=500, detail=f"MinIO error: {str(e)}")
 
@@ -21,7 +22,8 @@ async def ensure_bucket_exists(bucket_name: str):
 async def upload_file_to_minio(bucket_name: str, file_location: str, content: bytes):
     try:
         content_file = BytesIO(content)
-        minio_client.put_object(
+        await run_in_threadpool(
+            minio_client.put_object,
             bucket_name=bucket_name,
             object_name=file_location,
             data=content_file,
