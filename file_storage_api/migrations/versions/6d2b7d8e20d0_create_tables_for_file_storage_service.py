@@ -1,8 +1,8 @@
 """Create tables for file storage service
 
-Revision ID: a0e4e539df1e
+Revision ID: 6d2b7d8e20d0
 Revises: 
-Create Date: 2024-02-16 22:31:14.786974
+Create Date: 2024-02-20 11:03:13.346104
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'a0e4e539df1e'
+revision: str = '6d2b7d8e20d0'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -23,9 +23,9 @@ def upgrade() -> None:
     op.create_table('files',
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=False),
-    sa.Column('file_name', sa.String(), nullable=False),
+    sa.Column('file_name', sa.Text(), nullable=False),
     sa.Column('created_at', sa.DateTime(), nullable=False),
-    sa.Column('path', sa.String(), nullable=False),
+    sa.Column('path', sa.Text(), nullable=False),
     sa.Column('size', sa.Integer(), nullable=False),
     sa.Column('is_downloadable', sa.Boolean(), nullable=False),
     sa.PrimaryKeyConstraint('id'),
