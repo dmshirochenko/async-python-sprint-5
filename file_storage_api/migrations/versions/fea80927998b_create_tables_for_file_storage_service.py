@@ -1,8 +1,8 @@
 """Create tables for file storage service
 
-Revision ID: 6d2b7d8e20d0
+Revision ID: fea80927998b
 Revises: 
-Create Date: 2024-02-20 11:03:13.346104
+Create Date: 2024-02-20 11:13:33.743764
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = '6d2b7d8e20d0'
+revision: str = 'fea80927998b'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

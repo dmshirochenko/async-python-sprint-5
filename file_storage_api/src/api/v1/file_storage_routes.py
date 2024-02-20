@@ -75,7 +75,7 @@ async def download_file(
         result = await session.execute(select(File).where(File.id == file_id, File.user_id == user["user_id"]))
         file = result.scalars().first()
         if not file:
-            raise HTTPException(status_code=404, detail="File not found")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
 
         file_url = f"{settings.minio_url}/{settings.minio_bucket}/{file.path}"
         return RedirectResponse(url=file_url)
