@@ -22,7 +22,7 @@
     Auth service:
     http://localhost:8000/docs
     File storage service:
-    http://127.0.0.1:8000/docs
+    http://localhost:8080/docs
     Nginx is working with both services:
     htttp://localhost + endpoint path(auth service/file storage service)
     ```
