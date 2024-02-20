@@ -1,3 +1,33 @@
+# Server Installation
+
+1. **Clone the Repository**
+   ```
+   git clone git@github.com:dmshirochenko/async-python-sprint-5.git
+   ```
+2. **.ENV file creation**
+    ```
+    Create .env file using .env.example
+    ```
+2. **To Start the Server**
+    ```
+    make start
+    ```
+3. **To Stop the Server**
+    ```
+    make stop
+    ```
+4. **Open API documentation**
+    ```
+    For a server running on localhost, access it via:
+    Auth service:
+    http://localhost:8000/docs
+    File storage service:
+    http://127.0.0.1:8000/docs
+    Nginx is working with both services:
+    htttp://localhost + endpoint path(auth service/file storage service)
+    ```
+
+
 # Проектное задание пятого спринта
 
 Вам необходимо спроектировать и разработать файловое хранилище, которое позволяет хранить различные типы файлов — документы, фотографии, другие данные.
